@@ -361,7 +361,7 @@ new Vue({
       })
       let mailOptions = {
         from:"z382414867@163.com",
-        to:'609041063@qq.com',
+        to:'382414867@qq.com',
         subject: "秒杀成功,15分钟之内请支付",
         text: content || '测试'
       }
