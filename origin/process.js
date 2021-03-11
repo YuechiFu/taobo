@@ -1,5 +1,5 @@
 const { Worker, isMainThread, parentPort, workerData } = require('worker_threads')
-const got = require('./got')
+const got = require('./gotAction')
 
 function generatePrimes(start, range) {
   let primes = []

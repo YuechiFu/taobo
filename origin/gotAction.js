@@ -129,7 +129,7 @@ module.exports = function(worker_UserInfoArr,worker_ProductArr){
           timeout: 3000,
           headers: {
             'Content-Type': 'application/json',
-            'User-Agent': ' Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/7.0.15(0x17000f31) NetType/WIFI Language/zh_CN'
+            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/7.0.15(0x17000f31) NetType/WIFI Language/zh_CN'
           }
         }).then(res => {
           if (res.data.data.spu.list.length > 0 && res.data.data.spu.list[0].productCode == productCode) {
@@ -304,7 +304,7 @@ module.exports = function(worker_UserInfoArr,worker_ProductArr){
         })
         let mailOptions = {
           from:"z382414867@163.com",
-          to:'382414867@qq.com',
+          to:'609041063@qq.com',
           subject: "秒杀成功,15分钟之内请支付",
           text: content || '测试'
         }

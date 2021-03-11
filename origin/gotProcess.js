@@ -5,9 +5,10 @@ const numCPUs = require('os').cpus().length
 
 const userInfoArr = [
     {   
-        token: "Bearer fc7a5028-200c-48c4-b241-a86da936f925",
-        name: "FYC",
-        cartId: "19e3d03fed5543c5b43cd4bb947e291c",
+        token: "Bearer 4ba1a6f7-2b73-478a-a79e-f38c99726e98",
+        name: "hcw",
+        cartId: "1f28b86e11e84131b2f3ca680acc4e99",
+        addressId : '8a7a08b67597c46d0175a577df714932'
       },
       
     // {
@@ -20,25 +21,25 @@ const userInfoArr = [
 
  
 let productCodeLatestArr = [
-      'CZ6222-001',//AJ23
-      'DD3522-100',//aj11 adapt
-      'DD1666-100',//mid冰淇淋
-      'CW7104-601',//aj1 冰激凌gs
-      '555088-105',//摩卡男
-      'DD2224-200',//淡橘色
-      'DJ2756-100',//court aj1
-      'CZ4385-016',//酒红mi1d
-      '575441-105',//摩卡女
-      '555112-103',//粉熊猫
-      'DD1527-114',//裸眼3dLOW
-      'BQ6472-800',//奶茶mid
-      'BQ6472-202',//红豆mid
-      '554724-073',//黑白灰
-      'BQ6931-114',//裸眼3DMID
-      'CT0979-602',//zoom拼接
-      'CT0979-107',//zoom绿茶
-      'CV0152-401',//小闪电aj1
-      'CT0979-100',//zoom奶茶
+      'CZ6222-001',   //AJ23
+      'DD3522-100',   //aj11 adapt
+      'DD1666-100',   //mid冰淇淋
+      'CW7104-601',   //aj1 冰激凌gs
+      '555088-105',   //摩卡男
+      'DD2224-200',   //淡橘色
+      'DJ2756-100',   //court aj1
+      'CZ4385-016',   //酒红mi1d
+      '575441-105',   //摩卡女
+      '555112-103',   //粉熊猫
+      'DD1527-114',   //裸眼3dLOW
+      'BQ6472-800',   //奶茶mid
+      'BQ6472-202',   //红豆mid
+      '554724-073',   //黑白灰
+      'BQ6931-114',   //裸眼3DMID
+      'CT0979-602',   //zoom拼接
+      'CT0979-107',   //zoom绿茶
+      'CV0152-401',   //小闪电aj1
+      'CT0979-100',   //zoom奶茶
       'DD1503-100',   //dunk北卡蓝
       'DD1869-102',   //dunk high紫
       'DD1503-101',   //dunk熊猫 699
