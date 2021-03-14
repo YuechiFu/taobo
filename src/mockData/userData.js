@@ -1,4 +1,4 @@
-export default 
+module.exports = 
 [
     {
         token:'Bearer 9227d0e4-87fd-4fea-bb6b-e54241d7958e',

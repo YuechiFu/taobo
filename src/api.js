@@ -1,8 +1,8 @@
 const axios = require("axios");
+const nodemailer = require('nodemailer');
 var tssign = require("../origin/topTssign");
-export default {
+module.exports = {
   baseStorePath: "https://wxmall-lv.topsports.com.cn",
-
   demoConfirmData: JSON.stringify({
     merchantNo: "TS",
     shippingId: "",
@@ -30,14 +30,24 @@ export default {
     ],
     purchaseType: 1,
   }),
+  
 
-  requestHeader: {
-    "Content-Type": "application/json",
-    Authorization: token,
-    "User-Agent":
-      "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/7.0.15(0x17000f31) NetType/WIFI Language/zh_CN",
+  /**
+   * 生成请求的header
+   * @params token string 账号token
+   */
+  requestHeader(token){
+    return {
+      "Content-Type": "application/json",
+      "Authorization": token,
+      "User-Agent":  "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/7.0.15(0x17000f31) NetType/WIFI Language/zh_CN",
+    }
   },
+  
 
+  /**
+   * 根据日期生成TSSIGN 
+   */
   getTsign() {
     return tssign.AES_Encrypt(`tsmall#${new Date().getTime()}`);
   },
@@ -54,14 +64,15 @@ export default {
       }/order/confirmationOrder?tssign=${self.getTsign()}#/order/confirmationOrder`,
       method: "post",
       data: self.demoConfirmData,
-      headers: self.requestHeader,
+      headers: self.requestHeader(token),
     });
   },
 
   /**
    * 获取商品列表
+   * @params token string 账号token
    */
-  _getProductList() {
+  _getProductList(token) {
     let self = this;
     return axios({
       url: `${
@@ -69,18 +80,18 @@ export default {
       }/search/shopCommodity/list?shopNo=&sortColumn=upShelfTime&filterIds=&current=1&pageSize=3&tssign=${self.getTsign()}#/search/shopCommodity/list)`,
       method: "get",
       timeout: 3000,
-      headers: self.requestHeader,
+      headers: self.requestHeader(token),
     });
   },
 
   /**
    * 获取固定店铺的某个商品
-   * @params
-   *    storeNo     String
-   *    productCode String  商品货号
+   * @params token string 账号token
+   *    storeNo       String
+   *    productCode   String  商品货号
    *
    */
-  _getFixedProductList(storeNo, productCode) {
+  _getFixedProductList(token,storeNo, productCode) {
     let self = this;
     return axios({
       url: `${
@@ -88,32 +99,45 @@ export default {
       }/search/shopCommodity/list?searchKeyword=${productCode}&current=1&pageSize=20&sortColumn=upShelfTime&sortType=asc&filterIds=&shopNo=${storeNo}&tssign=${self.getTsign()}#/search/shopCommodity/list`,
       method: "get",
       timeout: 3000,
-      headers: self.requestHeader,
+      headers: self.requestHeader(token),
     });
   },
 
   /**
    * 获取商品信息
-   * @params
+   * @params 
+   *    token       String 账号token
    *    id          String  商品id
    */
-  _getProductInfo(id) {
+  _getProductInfo(token,id) {
     let self = this;
     return axios({
       url: `${
         self.baseStorePath
       }/shopCommodity/queryShopCommodityDetail/${id}?tssign=${self.getTsign()}#/shopCommodity/queryShopCommodityDetail/${id}`,
       method: "get",
-      headers: self.requestHeader,
+      headers: self.requestHeader(token),
     });
   },
 
    /**
    * 生成订单
-   * @params
-   * shippingId string
-   * subOrderList  string
+   * @params 
+   *    token         string   账号token
+   *    shippingId    string
+   *    subOrderList  string
    */
+  _createOrder(token,orderData){
+    return axios({
+      url : `${this.baseStorePath}/order/create?tssign=${self.getTsign()}#/order/create`,
+      method: 'post',
+      data: orderData,
+      headers:self.requestHeader(token)
+    })
+  },
+
+
+
 
   /**
    * geetest 验证加签

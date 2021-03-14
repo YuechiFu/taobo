@@ -1,4 +1,4 @@
-export default [
+module.exports = [
     'CZ6222-001', //AJ23
     'DD3522-100', //aj11 adapt
     'DD1666-100', //mid冰淇淋
