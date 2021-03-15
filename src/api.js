@@ -37,11 +37,12 @@ module.exports = {
    * @params token string 账号token
    */
   requestHeader(token){
-    return {
+    let obj = {
       "Content-Type": "application/json",
-      "Authorization": token,
       "User-Agent":  "Mozilla/5.0 (iPhone; CPU iPhone OS 13_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/7.0.18(0x17001227) NetType/WIFI Language/zh_CN",
     }
+    if(token) obj["Authorization"] = token;
+    return obj ;
   },
   
 
@@ -72,7 +73,7 @@ module.exports = {
    * 获取商品列表
    * @params token string 账号token
    */
-  _getProductList(token) {
+  _getProductList() {
     let self = this;
     return axios({
       url: `${
@@ -80,7 +81,7 @@ module.exports = {
       }/search/shopCommodity/list?shopNo=&sortColumn=upShelfTime&filterIds=&current=1&pageSize=3&tssign=${self.getTsign('#/search/shopCommodity/list')})`,
       method: "get",
       timeout: 3000,
-      headers: self.requestHeader(token),
+      headers: self.requestHeader(),
     });
   },
 
