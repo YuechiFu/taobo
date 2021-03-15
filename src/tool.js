@@ -16,7 +16,10 @@ module.exports = {
         },
         set:function(user,key,value){
             switch(key){
-                case 'isTokenExpired' : if(!value){console.log('Token 已过期')}; break;
+                case 'isTokenExpired' : 
+                    if(!value){console.log('Token 已过期')}
+                    else{ console.log('Token 有效');}; 
+                break;
             }
         }
 
@@ -25,24 +28,24 @@ module.exports = {
     init(){
         let self = this ;
         let token = userData[0].token;
-        self.checkAccount(token)
+        console.log(token)
+        self.checkAccount(token);
+        
     },
 
-     checkAccount(token){
+    checkAccount(token){
         let self = this ;
-        console.log(Api);
         let result = Api._validateExpire(token);
         result.then(res =>{
             console.log(res.data)
-            // console.group(res.data.bizCode);
-            /* if(res.data.bizCode  == 20000){
-                console.log('token 仍生效中...');
-            }else{
-                this.user.isTokenExpired = false ; 
-                console.log(res);
-            } */
+            if(res.data && res.data.bizCode  == 20000){
+                this.user.isTokenExpired = true;
+            }else{ this.user.isTokenExpired = false ; }
+        }).catch(err=>{
+           console.log(err)
         })
     },
+
 
 }
 

@@ -12,10 +12,10 @@ const numCPUs = require('os').cpus().length
 const userInfoArr = [
 
   {
-    token:'Bearer 4fa57a9f-3efa-4e3e-925c-56409d25aacb',
+    token:'Bearer 9519e2c8-9d03-4d09-82f8-ac0ea1027db0',
     name:'hcw',    
-    cartId:'19e3d03fed5543c5b43cd4bb947e291c',
-    addressId:'8a7a08b67597c46d0175a577df714932'}
+    cartId:'1f28b86e11e84131b2f3ca680acc4e99',addressId:'b98cd66ab8e540fda5098a6fc45d8d8e'
+}
 
 
   
@@ -124,6 +124,7 @@ new Vue({
               'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/7.0.18(0x17001227) NetType/WIFI Language/zh_CN'
             }
           }).then(res => {
+            console.log(res.data)
             if (res.data.bizCode == 20000) {
               this.getGeetestArr(res.data.data.verificMap.gt, res.data.data.verificMap.challenge, item, func, value1 = '', value2 = '')
             } else {

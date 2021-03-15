@@ -40,7 +40,7 @@ module.exports = {
     return {
       "Content-Type": "application/json",
       "Authorization": token,
-      "User-Agent":  "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/7.0.15(0x17000f31) NetType/WIFI Language/zh_CN",
+      "User-Agent":  "Mozilla/5.0 (iPhone; CPU iPhone OS 13_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/7.0.18(0x17001227) NetType/WIFI Language/zh_CN",
     }
   },
   
@@ -48,8 +48,8 @@ module.exports = {
   /**
    * 根据日期生成TSSIGN 
    */
-  getTsign() {
-    return tssign.AES_Encrypt(`tsmall#${new Date().getTime()}`);
+  getTsign(path) {
+    return tssign.AES_Encrypt(`tsmall#${new Date().getTime()+path}`);
   },
 
   /**
@@ -61,9 +61,9 @@ module.exports = {
     return axios({
       url: `${
         self.baseStorePath
-      }/order/confirmationOrder?tssign=${self.getTsign()}#/order/confirmationOrder`,
+      }/order/confirmationOrder?tssign=${self.getTsign('#/order/confirmationOrder')}`,
       method: "post",
-      data: self.demoConfirmData,
+      data:self.demoConfirmData,
       headers: self.requestHeader(token),
     });
   },
@@ -77,7 +77,7 @@ module.exports = {
     return axios({
       url: `${
         self.baseStorePath
-      }/search/shopCommodity/list?shopNo=&sortColumn=upShelfTime&filterIds=&current=1&pageSize=3&tssign=${self.getTsign()}#/search/shopCommodity/list)`,
+      }/search/shopCommodity/list?shopNo=&sortColumn=upShelfTime&filterIds=&current=1&pageSize=3&tssign=${self.getTsign('#/search/shopCommodity/list')})`,
       method: "get",
       timeout: 3000,
       headers: self.requestHeader(token),
@@ -96,7 +96,7 @@ module.exports = {
     return axios({
       url: `${
         self.baseStorePath
-      }/search/shopCommodity/list?searchKeyword=${productCode}&current=1&pageSize=20&sortColumn=upShelfTime&sortType=asc&filterIds=&shopNo=${storeNo}&tssign=${self.getTsign()}#/search/shopCommodity/list`,
+      }/search/shopCommodity/list?searchKeyword=${productCode}&current=1&pageSize=20&sortColumn=upShelfTime&sortType=asc&filterIds=&shopNo=${storeNo}&tssign=${self.getTsign('#/search/shopCommodity/list')}`,
       method: "get",
       timeout: 3000,
       headers: self.requestHeader(token),
@@ -114,7 +114,7 @@ module.exports = {
     return axios({
       url: `${
         self.baseStorePath
-      }/shopCommodity/queryShopCommodityDetail/${id}?tssign=${self.getTsign()}#/shopCommodity/queryShopCommodityDetail/${id}`,
+      }/shopCommodity/queryShopCommodityDetail/${id}?tssign=${self.getTsign('#/shopCommodity/queryShopCommodityDetail/'+id)}`,
       method: "get",
       headers: self.requestHeader(token),
     });
@@ -129,7 +129,7 @@ module.exports = {
    */
   _createOrder(token,orderData){
     return axios({
-      url : `${this.baseStorePath}/order/create?tssign=${self.getTsign()}#/order/create`,
+      url : `${this.baseStorePath}/order/create?tssign=${self.getTsign('#/order/create')}`,
       method: 'post',
       data: orderData,
       headers:self.requestHeader(token)
