@@ -92,7 +92,7 @@ module.exports = {
    *    productCode   String  商品货号
    *
    */
-  _getFixedProductList(token,storeNo, productCode) {
+  _getFixedProductList(storeNo, productCode) {
     let self = this;
     return axios({
       url: `${
@@ -100,7 +100,7 @@ module.exports = {
       }/search/shopCommodity/list?searchKeyword=${productCode}&current=1&pageSize=20&sortColumn=upShelfTime&sortType=asc&filterIds=&shopNo=${storeNo}&tssign=${self.getTsign('#/search/shopCommodity/list')}`,
       method: "get",
       timeout: 3000,
-      headers: self.requestHeader(token),
+      headers: self.requestHeader(),
     });
   },
 
@@ -110,14 +110,14 @@ module.exports = {
    *    token       String 账号token
    *    id          String  商品id
    */
-  _getProductInfo(token,id) {
+  _getProductInfo(id) {
     let self = this;
     return axios({
       url: `${
         self.baseStorePath
       }/shopCommodity/queryShopCommodityDetail/${id}?tssign=${self.getTsign('#/shopCommodity/queryShopCommodityDetail/'+id)}`,
       method: "get",
-      headers: self.requestHeader(token),
+      headers: self.requestHeader(),
     });
   },
 

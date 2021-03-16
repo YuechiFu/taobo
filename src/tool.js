@@ -9,10 +9,11 @@ function log(msg){
 
 module.exports = {
     
-    init(userData,validateTimer){
+    init(userData,targetProducts,validateTimer){
         const self = this;
-        if(!userData ) return;
+        if(!userData) return;
         this.userData = userData;
+        this.targetProducts = targetProducts || [];
         self.watch();
         self.validateTimer = parseInt(validateTimer) > 0 ? parseInt(validateTimer) : 30000;
         self.checkAccount();
@@ -49,7 +50,7 @@ module.exports = {
                         value && self.checkAccount();
                         break;
                     case 'isResetAction' :
-                        value && self.resetActionTT(self.getProductList()); 
+                        value && self.resetActionTT(self.getProductList.apply(self)); 
                          
                 }
             }
@@ -85,7 +86,7 @@ module.exports = {
                     'validate'  : res.data.data.validate
                 }
                 self.resetValidateTimer();
-                self.getProductList();
+                self.user.isResetAction = true ;
             }else{
                 log(`未通过人机校验，再来一次..`)
                 self.user.validateExpired = true ;
@@ -94,17 +95,51 @@ module.exports = {
     },
 
     resetActionTT(action){
+        let self = this;
+        self.actionTT && clearInterval(self.actionTT);
         self.actionTT = setInterval(()=>{
-            action();
-        },50)
+           action && action();
+        },2000)
     },
 
 
     getProductList(){
-        const self = this ;
+        let self = this ;
         let result = Api._getProductList();
         result.then(res=>{
             log(`刷新列表数据 共${res.data.data.spu.list.length}条数据`);
+            self.searchTargetProduct(res.data.data.spu.list);
+        }).catch(err => {
+            log(err)
+            log(`列表数据获取失败,重新获取..`);
+            self.getProductList();
+        })
+    },
+
+
+    searchTargetProduct(allProducts){
+        let self = this ;
+        let promiseArr = [],
+            allLength = allProducts.length,
+            targetLength = self.targetProducts.length;
+
+        for(let productItem of allProducts){
+            for(let targetItem of self.targetProducts){
+                if(productItem['productCode'] == targetItem){
+                //    promiseArr.push(self.getProductInfo);
+                    self.getProductInfo(productItem);
+                }
+            }
+        }
+        
+    },
+
+    getProductInfo(productData){
+        let {id,shopName,productName} = productData;
+        if(!id) return ;
+        let result = Api._getProductInfo(id);
+        result.then(res=>{
+            console.table(res.data.data.skuList);
         })
     }
 
