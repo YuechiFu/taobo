@@ -15,7 +15,7 @@ module.exports = {
         this.userData = userData;
         this.targetProducts = targetProducts || [];
         self.watch();
-        self.validateTimer = parseInt(validateTimer) > 0 ? parseInt(validateTimer) : 30000;
+        self.validateTimer = parseInt(validateTimer) > 0 ? parseInt(validateTimer) : 30000 * 60;
         self.checkAccount();
     },
 
@@ -50,7 +50,7 @@ module.exports = {
                         value && self.checkAccount();
                         break;
                     case 'isResetAction' :
-                        value && self.resetActionTT(self.getProductList.apply(self)); 
+                        value && self.resetActionTT(); 
                          
                 }
             }
@@ -98,8 +98,9 @@ module.exports = {
         let self = this;
         self.actionTT && clearInterval(self.actionTT);
         self.actionTT = setInterval(()=>{
-           action && action();
-        },2000)
+            // self.getProductList()
+        },200);
+        self.getProductList()
     },
 
 
@@ -108,34 +109,58 @@ module.exports = {
         let result = Api._getProductList();
         result.then(res=>{
             log(`刷新列表数据 共${res.data.data.spu.list.length}条数据`);
-            self.searchTargetProduct(res.data.data.spu.list);
+            let searchResults = self.searchTargetProduct(res.data.data.spu.list);
+            if(searchResults.length){
+                log(searchResults)
+            }
         }).catch(err => {
             log(err)
             log(`列表数据获取失败,重新获取..`);
-            self.getProductList();
+            // self.getProductList();
         })
     },
 
+    getFixedProductList(storeCode,productCode){
+        let self = this ;
+        let result =  (storeCode || productCode) ? Api._getFixedProductList(storeCode,productCode) : Api._getProductList();
+        result.then(res=>{
+            log(`共找到${res.data.data.spu.list.length}条数据`);
+            let searchResults = self.searchTargetProduct(res.data.data.spu.list);
+            if(searchResults.length){
+                console.log(searchResults)
+            }
+        }).catch(err => {
+            log(err)
+            log(`列表数据获取失败,重新获取..`);
+            // self.getProductList();
+        })
+    },
+
+    
 
     searchTargetProduct(allProducts){
         let self = this ;
-        let promiseArr = [],
-            allLength = allProducts.length,
-            targetLength = self.targetProducts.length;
-
+        let arr = []
         for(let productItem of allProducts){
-            for(let targetItem of self.targetProducts){
+            arr.push(productItem);
+            if(arr.length === 2){
+                return arr
+            }
+            /* for(let targetItem of self.targetProducts){
                 if(productItem['productCode'] == targetItem){
-                //    promiseArr.push(self.getProductInfo);
                     self.getProductInfo(productItem);
                 }
-            }
+            } */
         }
+        return arr ;
+        
+
         
     },
 
     getProductInfo(productData){
         let {id,shopName,productName} = productData;
+        console.table(productData);
         if(!id) return ;
         let result = Api._getProductInfo(id);
         result.then(res=>{
