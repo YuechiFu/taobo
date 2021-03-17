@@ -1,7 +1,9 @@
 const fs = require('fs');
 const { Worker, isMainThread, parentPort, workerData } = require('worker_threads')
 const Api = require('./api');
+const SizeData = require('./mockdata/sizeData');
 const numCPUs = require('os').cpus().length;
+
 
 function log(msg){
     console.log(`${new Date().toLocaleString()} : `, `${msg}`)
@@ -111,7 +113,11 @@ module.exports = {
             log(`刷新列表数据 共${res.data.data.spu.list.length}条数据`);
             let searchResults = self.searchTargetProduct(res.data.data.spu.list);
             if(searchResults.length){
-                log(searchResults)
+                for(let i=0; i<searchResults.length; i++){
+                    let productItem = searchResults[i];
+                    self.getProductInfo(productItem);
+                
+                }
             }
         }).catch(err => {
             log(err)
@@ -125,10 +131,7 @@ module.exports = {
         let result =  (storeCode || productCode) ? Api._getFixedProductList(storeCode,productCode) : Api._getProductList();
         result.then(res=>{
             log(`共找到${res.data.data.spu.list.length}条数据`);
-            let searchResults = self.searchTargetProduct(res.data.data.spu.list);
-            if(searchResults.length){
-                console.log(searchResults)
-            }
+          
         }).catch(err => {
             log(err)
             log(`列表数据获取失败,重新获取..`);
@@ -154,17 +157,35 @@ module.exports = {
         }
         return arr ;
         
-
-        
     },
 
     getProductInfo(productData){
         let {id,shopName,productName} = productData;
-        console.table(productData);
+        // console.table(productData);
         if(!id) return ;
         let result = Api._getProductInfo(id);
         result.then(res=>{
+            if (res.data.data.status != 3) {
+                log(`获取商品'${id}:${productName}'数据失败`);
+                return
+            }
+            let data = res.data.data;
+            let {productCode} = data;
+        
+            if(!!SizeData[productCode])
+
+
+            
+            console.log(
+                `\n******************************************************\n`+
+                `${data.productCode} |  ${data.productName} |  ${data.shopName} |  ￥${data.salePrice}`
+            )
             console.table(res.data.data.skuList);
+            
+
+        }).catch(err=>{
+            log(err);
+            
         })
     }
 
