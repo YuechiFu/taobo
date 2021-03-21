@@ -3,28 +3,88 @@ const axios = require('axios');
 const fs = require('fs');
 const nodemailer = require('nodemailer')
 var tssign = require('./topTssign.js');
-const userInfoArr = [
+const userInfoArr = [  
+  {token:'Bearer 00fa951f-128c-47e3-83f1-31f86e6aab68',
+  name: 'LA',    
+  cartId:'41a370ff6a184d7c839e8d3c4b619a1c',
+  addressId:'8a7a8ce06f42f001016f590b05fd0863'},
 
-  {token:'Bearer 9227d0e4-87fd-4fea-bb6b-e54241d7958e',name:'GITR',    cartId:'a2c2fc0aea154210b4e07c19f99a7884',addressId:'b98cd66ab8e540fda5098a6fc45d8d8e'},
-  
-  
+  {token:'Bearer 40824e96-0697-4118-8f67-688018e325ad',
+  name: 'U',    
+  cartId:'6aa8fde894434b97a3f688e3cb028a69',
+  addressId:'8a7a099874d3cbdc0175317d6f357b37'},
+
+    {token:'Bearer 7cac429a-342c-411b-b2b1-1b3a145efbec',
+    name:'xinayu',    
+    cartId:'b16d340096874626bfd1f4ce8d18c5ac',
+    addressId:'8a7a08b57647010201764b60b8466e67'},
+      
+
+
 
 
   
 ]
-
 let geetestArr = []
-
 const productCodeLatestArr = [
-  'CZ6222-001',//AJ23
-    'DD3522-100',//aj11 adapt
+  'GY7658',//350
+   'DC5255-043',
+   'GY7924',//700v2
+  'BQ6472-500',//粉mid
+  'DC0481-100',//小sacai
+  'DA7995-100',//小sacai
+  'CT0979-101',//复活节cmf
+  // 'CW1140-100',//彩色拼接
+  // 'DJ4695-122',//黑红midgs
+  'DC0774-601',//粉底low
+  'DD1869-100',//男雪城
+  'DD1399-101',//w雪城
+  'DB2179-100',//GS雪城
+  // '554724-122',//黑红mid
+  'DH9888-600',//kobe全明星
+  'DD1399-101',//全明星dunk gs
+  '555088-134',//大学蓝1
+  'CT1137-900',//CNCPTS
+  '554725-132',//薄荷绿gs
+  // '554724-132',//薄荷绿mid
+  // '510815-101',//樱花12
+  'DH4270-800',//浓橘色mid
+  'DH0210-100',//黑粉白
+  'DD9682-100',//TC7900
+  'DD3384-600',//情人节af1
+  'CW5379-600',//数码樱花粉
+  'DD1398-300',//全明星dunk
+  'CZ5624-100',//大巴黎4
+  'CD0461-601',//蛇纹
+  'DC9533-001',//union4
+  'DB4612-300',//喜力
+  'DB3610-105',//PSG CMFT
+  'DJ4342-400',//鸳鸯low
+  '442960-100',//AJ7GS
+  'BQ6931-802',//二次元橙GS
+  'DD6834-402',//二次元蓝
+  // 'DD6834-802',//二次元橙
+  'BQ6931-402',//二次元蓝GS
+  // 'BQ4422-100',//白85
+  'DC9857-200',//clot14
+  'DD3384-600',//情人节af1
+  'DD1391-001',//皇家蓝dunk
+  'CD0461-001',//液态银
+  'DB0732-200',//AJ4 TS
+  'Dd2233-001',//寿鞋
+  'DD2192-001',//全明星mid gs
+  'CW1590-001',//皇家蓝dunk low
+  'DD1869-101',//红dunkhigh
+  'DD1503-102',//白粉dunk
+  '555088-105',//摩卡男
+  '575441-105',//摩卡女
+  'DC1788-100',//午夜男
+  '575441-141',//午夜女
+  'BQ6817-009',//大象dunk
     'DD1666-100',//mid冰淇淋
     'CW7104-601',//aj1 冰激凌gs
-    '555088-105',//摩卡男
     'DD2224-200',//淡橘色
-    'DJ2756-100',//court aj1
     'CZ4385-016',//酒红mi1d
-    '575441-105',//摩卡女
     '555112-103',//粉熊猫
     'DD1527-114',//裸眼3dLOW
     'BQ6472-800',//奶茶mid
@@ -32,7 +92,7 @@ const productCodeLatestArr = [
     '554724-073',//黑白灰
     'BQ6931-114',//裸眼3DMID
     'CT0979-602',//zoom拼接
-    'CT0979-107',//zoom绿茶
+    'CT0979-601',//zoom樱花
     'CV0152-401',//小闪电aj1
     'CT0979-100',//zoom奶茶
     'DD1503-100',   //dunk北卡蓝
@@ -44,8 +104,11 @@ const productCodeLatestArr = [
     'DD1399-100',   //dunk灰白
     'DD1391-100',   //dunk熊猫 599
     'CW1590-100',   //dunk熊猫 599
-  //   'CW1574-100',//双钩af1
-    // '554724-075',
+    'GZ6984',
+    'DD1649-001',//全明星mid
+    'CW0898-400',//AJ4
+    'CW1574-100',//双钩af1
+  //    '554724-075',
 ] //需要监听的产品CODE2
 
 // const productCodeLatestArr = ['CU4962-010'] //需要监听的产品CODE
@@ -67,7 +130,7 @@ new Vue({
     getProductList() {
       let number = 0
       axios({
-        url: `https://wxmall-lv.topsports.com.cn/search/shopCommodity/list?shopNo=&sortColumn=upShelfTime&filterIds=&current=1&pageSize=3&tssign=${tssign.AES_Encrypt(`tsmall#${new Date().getTime()}#/search/shopCommodity/list`)}`,
+        url: `https://wxmall.topsports.com.cn/search/shopCommodity/list?shopNo=&sortColumn=upShelfTime&filterIds=&current=1&pageSize=2&tssign=${tssign.AES_Encrypt(`tsmall#${new Date().getTime()}#/search/shopCommodity/list`)}`,
         method: 'get',
         timeout: 3000,
         headers: {
@@ -87,7 +150,7 @@ new Vue({
           setTimeout(() => {
             this.getProductList()
             console.log(`${new Date().toLocaleString()}刷新`);
-          }, 0)
+          },33)
         }
       })
       .catch(error => {
@@ -100,7 +163,7 @@ new Vue({
       userInfoArr.forEach((item, index) => {
         setTimeout(()=>{
           axios({
-            url: `https://wxmall-lv.topsports.com.cn/order/confirmationOrder?tssign=${tssign.AES_Encrypt(`tsmall#${new Date().getTime()}#/order/confirmationOrder`)}`,
+            url: `https://wxmall.topsports.com.cn/order/confirmationOrder?tssign=${tssign.AES_Encrypt(`tsmall#${new Date().getTime()}#/order/confirmationOrder`)}`,
             method: 'post',
             data: '{"merchantNo":"TS","shippingId":"","subOrderList":[{"shopNo":"NKCC42","expressType":2,"commodityList":[{"productCode":"DC0589-601","sizeNo":"20160426000036","skuNo":"20201103001512","sizeCode":"4","num":1,"shoppingcartId":"","itemFlag":0,"assignProNo":"0","roomId":"","roomName":"","liveType":0,"shopCommodityId":"f74c014ce0974df09b7eacae64873ec7"}]}],"purchaseType":1}',
             headers: {
@@ -122,7 +185,7 @@ new Vue({
     getGeetestArr(gt, challenge, item, func, value1 = '', value2 = '') {
       axios({
         method: 'get',
-        url: `http://api.ddocr.com/api/gateway.jsonp?wtype=geetest&secretkey=bbe7764080464234a046befa79624816&gt=${gt}&referer=https://servicewechat.com/wx71a6af1f91734f18/30/page-frame.html&challenge=${challenge}`,
+        url: `http://api.faka168.com/api/gateway.jsonp?wtype=geetest&secretkey=cce3db215335453ab30ecf6c5c8e59b5&gt=${gt}&referer=https://servicewechat.com/wx71a6af1f91734f18/30/page-frame.html&challenge=${challenge}`,
         headers: {
           'Accept': 'text/html',
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -141,7 +204,7 @@ new Vue({
           console.table(geetestArr);
         } else {
           axios({
-            url: `https://wxmall-lv.topsports.com.cn/order/confirmationOrder?tssign=${tssign.AES_Encrypt(`tsmall#${new Date().getTime()}#/order/confirmationOrder`)}`,
+            url: `https://wxmall.topsports.com.cn/order/confirmationOrder?tssign=${tssign.AES_Encrypt(`tsmall#${new Date().getTime()}#/order/confirmationOrder`)}`,
             method: 'post',
             data: '{"merchantNo":"TS","shippingId":"","subOrderList":[{"shopNo":"NKCC42","expressType":2,"commodityList":[{"productCode":"DC0589-601","sizeNo":"20160426000036","skuNo":"20201103001512","sizeCode":"4","num":1,"shoppingcartId":"","itemFlag":0,"assignProNo":"0","roomId":"","roomName":"","liveType":0,"shopCommodityId":"f74c014ce0974df09b7eacae64873ec7"}]}],"purchaseType":1}',
             headers: {
@@ -163,7 +226,7 @@ new Vue({
     },
     getFixedProductList(storeNo, productCode) {
       axios({
-        url: `https://wxmall-lv.topsports.com.cn/search/shopCommodity/list?searchKeyword=${productCode}&current=1&pageSize=20&sortColumn=upShelfTime&sortType=asc&filterIds=&shopNo=${storeNo}&tssign=${tssign.AES_Encrypt(`tsmall#${new Date().getTime()}#/search/shopCommodity/list`)}`,
+        url: `https://wxmall.topsports.com.cn/search/shopCommodity/list?searchKeyword=${productCode}&current=1&pageSize=20&sortColumn=upShelfTime&sortType=asc&filterIds=&shopNo=${storeNo}&tssign=${tssign.AES_Encrypt(`tsmall#${new Date().getTime()}#/search/shopCommodity/list`)}`,
         method: 'get',
         timeout: 3000,
         headers: {
@@ -183,10 +246,11 @@ new Vue({
       })
     },
     getProductInfo(id, shopName, productName) {
+      console.log(id);
       console.log(`这家傻逼店-----→${shopName || '固定监听店铺'}偷摸发售${productName || '固定监听商品'}了-------------------------------${new Date().toLocaleString()}`);
       console.log('-------------------------去商品详情ing-------------------------------' + new Date().toLocaleString());
       axios({
-        url: `https://wxmall-lv.topsports.com.cn/shopCommodity/queryShopCommodityDetail/${id}?tssign=${tssign.AES_Encrypt(`tsmall#${new Date().getTime()}#/shopCommodity/queryShopCommodityDetail/${id}`)}`,
+        url: `https://wxmall.topsports.com.cn/shopCommodity/queryShopCommodityDetail/${id}?tssign=${tssign.AES_Encrypt(`tsmall#${new Date().getTime()}#/shopCommodity/queryShopCommodityDetail/${id}`)}`,
         method: 'get',
         headers: {
           'Content-Type': 'application/json',
@@ -202,13 +266,17 @@ new Vue({
             fixSizeArr = [ 3.5, 4, 4.5, 5, 7, 7.5, 8, 8.5, 9, 9.5, 10]
           } else if (res.data.data.productCode == 'CD4991-700' || res.data.data.productCode == 'CD4991-101' || res.data.data.productCode == 'DD3522-100' || res.data.data.productCode == 'DD3522-100') {
             fixSizeArr = [9, 9.5, 10, 10.5]
-          } else if (res.data.data.productCode == 'CT0979-107' || res.data.data.productCode == 'CT0979-602' ) {
-            fixSizeArr = [5, 5.5, 6, 6.5, 9.5, 10, 10.5, 11]
-          } else if (res.data.data.productCode == '554724-075') {
-            fixSizeArr = [7,7.5]
-          } else if (res.data.data.productCode == 'BQ6472-202' ) {
-            fixSizeArr = [5, 5.5, 6, 6.5, 7, 9]
-          } else if (res.data.data.productCode == 'CW2190-300') {
+          } else if (res.data.data.productCode == 'CT0979-107' || res.data.data.productCode == 'CT0979-602'  || res.data.data.productCode =='CW2919-100') {
+            fixSizeArr = [5, 5.5, 6, 6.5,7,9.5, 10, 10.5, 11]
+          } else if (res.data.data.productCode == 'DD1649-001' || res.data.data.productCode == 'DD6834-402' || res.data.data.productCode == 'CW6576-100'){
+            fixSizeArr = [7,7.5,8,8.5]
+          } else if (res.data.data.productCode == '554724-132' || res.data.data.productCode == '554725-135')  {
+            fixSizeArr = [7,7.5,8,8.5,9,'3.5Y','4Y','4.5Y','5Y']
+          } else if (res.data.data.productCode == 'CW2919-100'|| res.data.data.productCode ==   'GW0089' || res.data.data.productCode ==   'GY7658' )  {
+            fixSizeArr = [4,4.5,5,5.5,6,6.5]
+          } else if (res.data.data.productCode == 'BQ6472-202' ||res.data.data.productCode == 'BQ6931-114'||res.data.data.productCode =='442960-100' ) {
+            fixSizeArr = [5,5.5,6,6.5,'3.5Y','4Y','4.5Y','5Y']
+          } else if (res.data.data.productCode == 'CW2190-300' ||res.data.data.productCode == 'CW0898-400') {
             fixSizeArr = [8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12]
           } else {
             // fixSizeArr = [5,5.5,6,6.5,7,7.5,8,8.5,9,9.5,10,10.5,11, 11.5, 12,'3.5Y','4Y','4.5Y','5Y','5.5Y','6Y']  //男女款
@@ -337,14 +405,14 @@ new Vue({
         service: "163",  //  邮箱
         secure: true,  //  安全的发送模式
         auth: {
-          user: "z382414867@163.com", //  发件人邮箱
-          pass: "VGDBEZLGAIXLTNMW"//  授权码
+          user: "mei690188686@163.com", //  发件人邮箱
+          pass: "ZKIWENORDBZYEMLM"//  授权码
         }
       })
       let mailOptions = {
-        from:"z382414867@163.com",
-        to:'382414867@qq.com',
-        subject: "秒杀成功,15分钟之内请支付",
+        from:"mei690188686@163.com",
+        to:'690188686@qq.com',
+        subject: "秒杀成功,冲冲冲冲冲！！！！",
         text: content || '测试'
       }
       transporter.sendMail(mailOptions, (err, data) => {
@@ -371,7 +439,7 @@ new Vue({
         "challenge": challenge
       }
       axios({
-        url: `https://wxmall-lv.topsports.com.cn/order/create?tssign=${tssign.AES_Encrypt(`tsmall#${new Date().getTime()}#/order/create`)}`,
+        url: `https://wxmall.topsports.com.cn/order/create?tssign=${tssign.AES_Encrypt(`tsmall#${new Date().getTime()}#/order/create`)}`,
         method: 'post',
         data: data,
         headers: {
@@ -397,4 +465,4 @@ new Vue({
     // this.addGeetestArrGetProductList('getProductInfo','bbc8c4d09de74532b88945df588a3fa7')  //私密链接监控
     // this.addGeetestArrGetProductList('getFixedProductList','NKSG73','CT0979-107')      //xx店铺马上发xx了
   }
-})
+})  
