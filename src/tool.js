@@ -1,5 +1,8 @@
 const fs = require('fs');
+const { parse } = require('path');
+const {parentPort} = require('worker_threads');
 const Api = require('./api');
+const { filter } = require('./mockData/productData');
 const SizeData = require('./mockdata/sizeData');
 const numCPUs = require('os').cpus().length;
 
@@ -11,32 +14,55 @@ function log(msg){
 module.exports = {
 
     /**
-     * 初始化操作
+     * 子进程的初始化
      */
-     init(userData,targetProducts,validateTimer){
+     init(allUser,userIndex,targetProducts,validateTimer){
         const self = this;
-        if(!userData) return;
+        if(!allUser || !allUser.length ||!allUser[userIndex]) return;
 
         // 设置当前用户
-        this.userData = userData;
+        this.allUser = allUser;
+        this.userIndex = userIndex;
+        this.userData = allUser[userIndex] || {};
+
         // 设置监控产品
         this.targetProducts = targetProducts || [];
         
         // 人机校验频率间隔
         self.validateTimer = parseInt(validateTimer) >= 0 ? parseInt(validateTimer) : 30000 * 60;
 
-        // 刷新产品数据时间间隔
-        self.refreshTimer = 1000;
+
 
         // 监控相关属性
         self.watch();
 
         self.user.isGeetExpired = true ;
-
-
-
         
     },
+
+    /**
+     * 主进程的初始化
+     */
+    initMain(allUser,targetProducts,refreshTimer){
+        const self = this;
+        if(!allUser || !allUser.length) return;
+        log('主进程执行')
+
+         // 设置当前用户
+         this.allUser = allUser;
+         // 设置监控产品
+         this.targetProducts = targetProducts || [];
+        
+         if(this.actionTT){clearInterval(this.actionTT);this.actionTT = null}
+         this.actionTT = setInterval(()=>{
+             self.getProductList();
+         },parseInt(refreshTimer) ||  3000)
+
+    }, 
+
+
+
+
 
 
     /**
@@ -119,10 +145,13 @@ module.exports = {
                     'validate'  : res.data.data.validate
                 }
                 self.resetValidateTimer();
+                parentPort.postMessage({
+                    userItem : self.userData,
+                    index : self.userIndex
+                });
             }else{
                 log(`未通过人机校验，再来一次..`);
-                self.getGeetValidate(gt,challenge);
-                // self.user.isGeetExpired = true ;
+                self.user.isGeetExpired = true ;
             }
         })
     },
@@ -141,13 +170,13 @@ module.exports = {
                 for(let i=0; i<searchResults.length; i++){
                     let productItem = searchResults[i];
                     let {id,shopName,productName} = productItem;
-                    // self.getProductInfo(id,shopName,productName);
+                    self.getProductInfo(id,shopName,productName);
                 }
             }
         }).catch(err => {
             log(err)
             log(`列表数据获取失败,重新获取..`);
-            // self.getProductList();
+            self.getProductList();
         })
     },
 
@@ -156,6 +185,7 @@ module.exports = {
      */
     getProductInfo(id,shopName,productName){
         if(!id) return ;
+        let self = this;
         let result = Api._getProductInfo(id);
         result.then(res=>{
             if (res.data.data.status != 3) {
@@ -164,18 +194,27 @@ module.exports = {
             }
             let data = res.data.data;
             console.log(
-                `\n******************************************************\n`+
+                `\n-------------------------\n`+
                 `${data.productCode} |  ${data.productName} |  ${data.shopName} |  ￥${data.salePrice}`
             )
-            console.table(res.data.data.skuList);
+            let sizeSkuData = self.getSizeSkuData(res.data.data);
+            console.table(sizeSkuData);
         }).catch(err=>{
             log(err);
         })
     },
 
+    /**
+     * 创建订单
+     * create Order 
+     */
+    createOrder(){
+
+    },
+
 
     /**
-     * 匹配目标
+     * 遍历产品列表匹配目标产品
      * @param allProducts Array 
      */
      searchTargetProduct(allProducts){
@@ -193,8 +232,109 @@ module.exports = {
             } */
         }
         return arr ;
-        
     },
+    
+    /**
+     * 遍历尺码列表 
+     * 匹配目标尺码 或 有库存的尺码 
+     */
+    getSizeSkuData(data){
+        if(!data || !data.skuList) return false;
+        let { skuList, productCode } = data,
+            specialSize = new Set(SizeData[productCode] || []);
+            filterSkuList = [];
+
+        if(specialSize.size){
+            // 特殊产品码数匹配
+            for(let skuItem of skuList){
+                skuItem.stock / 1 > 0 
+                && specialSize.has(parseFloat(skuItem.sizeCode)) 
+                && filterSkuList.push(skuItem);
+            } 
+        }else{
+            // 普通产品码数匹配 
+            for(let skuItem of skuList){
+                skuItem.stock / 1 > 0 &&  filterSkuList.push(skuItem);
+            } 
+        }
+        return filterSkuList;
+    },
+
+    getRandomSize(sizeList){
+        if(!sizeList) return false ;
+    },
+
+    /**
+     * 生成subOrderList
+     * @param productData Object 商品详情数据 
+     * 
+     */
+    setSubOrderList(data){
+        if(!data) return false;
+        let subOrderList = [{
+            "shopNo": data.shopNo,
+            "shopName": data.shopName,
+            "mdmShopName": data.shopName,
+            "shopAddress": data.shopName,
+            "totalNum": 1,
+            "totalPrice": null,
+            "virtualShopFlag": 0,
+            "expressType": 2,
+            "remark": '',
+            "fullDiscountAmount": null,
+            "fullReductionAmount": null,
+            "couponAmount": "0.00",
+            "commodityList": [{
+              "map": {},
+              "orderByClause": null,
+              "shoppingcartId": "",
+              "paterId": null,
+              "productCode": data.productCode,
+              "productNo": data.productNo,
+              "colorNo": "00",
+              "colorName": "默认",
+              "sizeNo": skuData.sizeNo,
+              "sizeCode": skuData.sizeCode,
+              "sizeEur": skuData.sizeEur,
+              "productName": data.productName,
+              "picPath": data.picList[0] || "",
+              "brandDetailNo": "NK01",
+              "proNo": null,
+              "proName": null,
+              "assignProNo": "0",
+              "skuId": skuData.id,
+              "skuNo": skuData.skuNo,
+              "shopCommodityId": data.id,
+              "salePrice": data.salePrice,
+              "tagPrice": data.tagPrice,
+              "num": 1,
+              "status": 3,
+              "itemFlag": 0,
+              "usedTicket": null,
+              "activityType": 0,
+              "activityTypeStr": null,
+              "usedTickets": null,
+              "liveType": 0,
+              "roomId": null,
+              "roomName": "",
+              "zoneQsLevel": data.zoneQsLevel
+            }],
+            "ticketCodes": null,
+            "vipPrefAmount": "0.00",
+            "prefAmount": "0.00",
+            "ticketDtos": [],
+            "unTicketDtos": [],
+            "orderTickets": null,
+            "ticketPresentDtos": null,
+            "expressAmount": "0.00",
+            "expressAmountStr": "包邮",
+            "cashOnDelivery": 0,
+            "salePriceAmount": data.salePrice + '',
+            "promotionAmount": "0.00"
+          }] 
+        return subOrderList;
+    }
+
 
 
 }

@@ -7,17 +7,34 @@ let userData = require('./mockData/userData.js');
 let productData = require('./mockData/productData.js');
 
 
+
 if(isMainThread){
-    let actionTT = setInterval(()=>{
-        tool.getProductList();
-    },1000 * 3)
+    tool.initMain(
+        userData,
+        productData,
+        1000 * 3 
+    )
+    new Proxy(userData,{
+        set:function(){
+            console.log('更新userdata')
+            tool.initMain(
+                userData,
+                productData,
+                1000 * 3 
+            )
+        }
+    })
+    
    
 
     const threads = new Set()
-    for(let userItem of userData){
+    for(let [userIndex,userItem] of userData.entries()){
         threads.add(
             new Worker(__filename,{
-                workerData:{ userItem }
+                workerData:{ 
+                    userItem,
+                    userIndex
+                 }
             })
         )
     }
@@ -33,16 +50,19 @@ if(isMainThread){
             console.log(`---线程${worker.threadId}正在执行---\n`);
         })
         worker.on('message', (msg) => {
-            console.log(msg)
+            if(!msg || !msg.userItem) return ;
+           console.log(`---第${msg.index+1}个用户校验更新---\n`);
+           console.table(msg.userItem.geet)
+           userData.splice(msg.index,1,msg.userItem);
         })
     }
 }else{
     tool.init(
-        workerData.userItem,
+        userData,
+        workerData.userIndex,
         productData,
         1000 * 60 * 9 
     );
-    // parentPort.postMessage(data)
 }
 
 
