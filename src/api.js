@@ -129,6 +129,7 @@ module.exports = {
    *    subOrderList  string
    */
   _createOrder(token,orderData){
+    let self = this ;
     return axios({
       url : `${this.baseStorePath}/order/create?tssign=${self.getTsign('#/order/create')}`,
       method: 'post',

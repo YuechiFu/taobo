@@ -1,9 +1,9 @@
 module.exports = 
 [
     {
-        token:'Bearer 33a91430-b75e-48b0-80ab-0f43881e486a',
+        token:'Bearer fed5bcb2-c599-4d98-b4f4-80a71a414545',
         name:'hcw',    
-        cartId:'1f28b86e11e84131b2f3ca680acc4e99',
-        addressId:'b98cd66ab8e540fda5098a6fc45d8d8e'
+        cartId:'32f24ca4e5354e8fa1316262beda45be',
+        addressId:'8a7a08b67597c46d0175a577df714932'
     }
 ]

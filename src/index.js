@@ -5,25 +5,19 @@ const numCPUs = require('os').cpus().length;
 
 let userData = require('./mockData/userData.js');
 let productData = require('./mockData/productData.js');
+const { toLocaleString } = require('./mockData/userData.js');
 
 
 
 if(isMainThread){
+
+    // new Worker()
     tool.initMain(
-        userData,
-        productData,
-        1000 * 3 
+        false,          // 是否只是更新用户校验
+        userData,       // 所有用户数据
+        productData,    // 监控的产品数据
+        5000            // 操作的时间间隔
     )
-    new Proxy(userData,{
-        set:function(){
-            console.log('更新userdata')
-            tool.initMain(
-                userData,
-                productData,
-                1000 * 3 
-            )
-        }
-    })
     
    
 
@@ -54,6 +48,7 @@ if(isMainThread){
            console.log(`---第${msg.index+1}个用户校验更新---\n`);
            console.table(msg.userItem.geet)
            userData.splice(msg.index,1,msg.userItem);
+           tool.initMain(true,userData)
         })
     }
 }else{

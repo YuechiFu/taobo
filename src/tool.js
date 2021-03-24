@@ -1,5 +1,7 @@
+const { clear } = require('console');
 const fs = require('fs');
 const { parse } = require('path');
+const { formatWithOptions } = require('util');
 const {parentPort} = require('worker_threads');
 const Api = require('./api');
 const { filter } = require('./mockData/productData');
@@ -43,20 +45,24 @@ module.exports = {
     /**
      * 主进程的初始化
      */
-    initMain(allUser,targetProducts,refreshTimer){
+    initMain(isUpdate,allUser,targetProducts,refreshTimer){
         const self = this;
         if(!allUser || !allUser.length) return;
-        log('主进程执行')
 
-         // 设置当前用户
+        // 设置当前用户
          this.allUser = allUser;
-         // 设置监控产品
+
+        // 如果此时只是用户校验更新
+        if(isUpdate){log('用户校验数据更新');return};
+
+        // 设置监控产品
          this.targetProducts = targetProducts || [];
         
          if(this.actionTT){clearInterval(this.actionTT);this.actionTT = null}
+         self.getProductList();
          this.actionTT = setInterval(()=>{
              self.getProductList();
-         },parseInt(refreshTimer) ||  3000)
+         },parseInt(refreshTimer))
 
     }, 
 
@@ -166,6 +172,7 @@ module.exports = {
         result.then(res=>{
             log(`刷新列表数据 共${res.data.data.spu.list.length}条数据`);
             let searchResults = self.searchTargetProduct(res.data.data.spu.list);
+            // return
             if(searchResults.length){
                 for(let i=0; i<searchResults.length; i++){
                     let productItem = searchResults[i];
@@ -176,12 +183,14 @@ module.exports = {
         }).catch(err => {
             log(err)
             log(`列表数据获取失败,重新获取..`);
-            self.getProductList();
+            setTimeout(function(){ self.getProductList()},500)
+           
         })
     },
 
     /**
      * 获取产品详情
+     * @param id        String 商品id
      */
     getProductInfo(id,shopName,productName){
         if(!id) return ;
@@ -193,11 +202,12 @@ module.exports = {
                 return
             }
             let data = res.data.data;
+            let sizeSkuData = self.getSizeSkuData(res.data.data);
+            self.setOrderToUser(data,sizeSkuData);     
             console.log(
-                `\n-------------------------\n`+
+                `\n——————————发现商品——————————\n`+
                 `${data.productCode} |  ${data.productName} |  ${data.shopName} |  ￥${data.salePrice}`
             )
-            let sizeSkuData = self.getSizeSkuData(res.data.data);
             console.table(sizeSkuData);
         }).catch(err=>{
             log(err);
@@ -206,11 +216,63 @@ module.exports = {
 
     /**
      * 创建订单
-     * create Order 
+     * @param subOrderList  用户下单商品的生成的数据(店铺名,sku,size,stock...)
+     * @param index         用户在用户列表的下标
+     * -----------------
+     * @param token         用户账号的鉴权token 
+     * @param shippingId    用户地址ID
+     * @param challenge     用户加签的challenge 
+     * @param validata      用户加签的valiatge 
      */
-    createOrder(){
+    createOrder(index,subOrderList){
+        let self = this;
+        if(!subOrderList)return;
+        let userItem = self.allUser[index];
+        if(!userItem) return ;
+        let {
+            token,
+            addressId:shippingId,
+            geet:{challenge},
+            geet:{validate},
+        } = userItem;
 
+        subOrderList[0].commodityList[0].shoppingcartId = userItem['cartId'];
+        
+        let orderDetail = {
+            username    :  userItem.name,
+            productName :  subOrderList[0].commodityList[0].productName,
+            size        :  subOrderList[0].commodityList[0].sizeEur,
+            price       :  subOrderList[0].commodityList[0].salePriceAmount,
+            from        :  subOrderList[0].commodityList[0].shopAddress
+        }
+
+        let data = {
+            "merchantNo"            : "TS",
+            "rid"                   : '',
+            "shippingId"            : shippingId,
+            "subOrderList"          : subOrderList,
+            "purchaseType"          : 2,
+            "usedPlatformCouponList": [],
+            "verificationType"      : 2,
+            "validate"              : validate,
+            "seccode"               : `${validate}|jordan`,
+            "challenge"             : challenge
+        };
+        console.log(`——————————— Make Order Right Now , Wait ... ———————————`)
+        Api._createOrder(token,data).then((res)=>{
+            log(res.data)
+            if(res.data && res.data.bizCode == 20000){
+                console.log(`⭐⭐🎉🎉🎉Congratulations!!Order Success!!🎉🎉🎉⭐⭐`);
+                console.table(orderDetail);
+                console.log(`⭐⭐—————— Congratulations!!Order Success!! ————⭐⭐`);
+            }else{
+                log(`—————————— Order Failed ——————————`);
+                console.table(orderDetail);
+            }
+        })
+        
     },
+
 
 
     /**
@@ -260,16 +322,41 @@ module.exports = {
         return filterSkuList;
     },
 
-    getRandomSize(sizeList){
-        if(!sizeList) return false ;
+
+    /**
+     * 为所有用户生成订单请求数据
+     * @param data        Object 产品数据
+     * @param sizeSkuData Array  过滤后得到的尺码数据
+     */
+     setOrderToUser(productData,sizeList){
+        let self = this ;
+        if(!productData || !sizeList || !sizeList.length) return ;
+        console.table(sizeList);
+        let allUser = self.allUser;
+        let len = allUser.length ;
+        for(let i=0; i<len; i++){
+            let userItem = allUser[i];
+            let index = parseInt( Math.random() * sizeList.length);
+            let randomSizeItem = sizeList[index] ;
+            if(!userItem['geet']) continue;
+            if(parseInt(randomSizeItem.stock) > 0){
+                self.actionTT && clearInterval(self.actionTT);
+                let orderData = self.setSubOrderList(productData,randomSizeItem);
+                randomSizeItem.stock-- ;
+                randomSizeItem.stock == 0 && sizeList.splice(index,1);
+                self.createOrder(i,orderData);
+            } 
+        }
     },
+
 
     /**
      * 生成subOrderList
      * @param productData Object 商品详情数据 
+     * @param skuData     Object 商品尺码数据
      * 
      */
-    setSubOrderList(data){
+    setSubOrderList(data,skuData){
         if(!data) return false;
         let subOrderList = [{
             "shopNo": data.shopNo,
